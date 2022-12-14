@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-
+import os
 def drawTrack(trackList):
 
     img=np.zeros((600,600))
@@ -31,7 +31,12 @@ def process_state_image(state):
     state /= 255.0
     return state
 
-def process_state_image2(state):
+def process_state_image2(state,number,e):
+    if os.path.exists('./videos/'+str(e)):
+        print('')
+    else:
+        os.mkdir('./videos/'+str(e))
+    cv2.imwrite('./videos/'+str(e)+'/'+str(number)+'.jpg', state)
 
     fakeState = cv2.cvtColor(state, cv2.COLOR_BGR2GRAY)
     fakeState = fakeState.astype(float)

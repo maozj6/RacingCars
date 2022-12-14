@@ -80,16 +80,17 @@ def origin(path,epchos):
     lastPosition = [(0,0)]
     e_number=[]
     end_number=[]
+    end_label=[]
 
     guard = 0
 
 
 
-
-
     for e in range(play_episodes):
+        print("the epoch is")
+        print(e)
 
-        if len(Frames)>10000:
+        if len(Frames)>100000:
             break
 
 
@@ -103,6 +104,8 @@ def origin(path,epchos):
 
 
         while True:
+                if frameCounter==120:
+                    print("ok")
 
 
                 env.render()
@@ -113,27 +116,13 @@ def origin(path,epchos):
                 posx,posy=info[0]
                 lastPosition.append((posx,posy))
 
-                # stuckChecker=0
-                # if frameCounter>60:
-                #     if lastPosition==info[0]:
-                #         stuckChecker=stuckChecker+1
-                #         if stuckChecker>60:
-                #             ind = ind + 1
-                #             endFrameNumber.append(2000)
-                #             break
+
 
 
                 if frameCounter!=0 :
                     Speed.append(calSpeed(lastPosition[frameCounter+1],lastPosition[frameCounter]))
                     print("speed is {}".format(Speed[frameCounter-1]))
-                #
-                # if frameCounter != 1:
-                #     Speed.append(calSpeed(lastPosition[frameCounter], lastPosition[frameCounter - 1]))
-                #     print("speed is {}".format(Speed[frameCounter]))
-                # else:
-                #     Speed.append(0)
 
-                #if speed is 0, then break
                 if frameCounter>10:
                     if Speed[frameCounter-1]==0:
                         for i in range(frameCounter):
@@ -142,6 +131,7 @@ def origin(path,epchos):
                                 Safety.append(0)
                             else:
                                 Safety.append(1)
+                        end_label.append(1)
                         break
                 print(info[0])
 
@@ -154,6 +144,14 @@ def origin(path,epchos):
                             Safety.append(0)
                         else:
                             Safety.append(1)
+                    end_label.append(0)
+                    break
+
+                if frameCounter>300:
+                    for i in range(frameCounter):
+                        end_number.append(frameCounter)
+                        Safety.append(1)
+                    end_label.append(1)
                     break
 
 
@@ -165,7 +163,7 @@ def origin(path,epchos):
                 total_reward += reward
                 print("frameCounter is {}".format(frameCounter))
 
-                next_state, ave_pixel_value= process_state_image2(next_state)
+                next_state, ave_pixel_value= process_state_image2(next_state,frameCounter,e)
                 Frames.append(next_state)
                 state_frame_stack_queue.append(next_state)
                 e_number.append(e)
@@ -181,22 +179,28 @@ def origin(path,epchos):
 
     print(len(Speed))
     print(len(Ave_Color_Value))
+    print("------")
     print(len(Safety))
+    print("------")
     print(e)
     # fr = np.array(Frames)
     safeties=np.array(Safety)
     # np.save("datas/safes.npy", fr)
-    np.save(path+"/labels.npy", safeties)
+    np.save("./videos/labels.npy", safeties)
+    np.save("./videos/label2.npy", end_label)
+    print(len(end_label))
+
+
 
     # dataframe = pd.DataFrame({'Speed': Speed,})
     dataframe = pd.DataFrame({ 'Ave_Color_Value': Ave_Color_Value,'Speed':Speed,'Safety': Safety})
 
-    dataframe.to_csv(path+"/safes.csv",index=False,sep=',')
+    dataframe.to_csv("./videos/safes.csv",index=False,sep=',')
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default="./datas")
-    parser.add_argument('--epoch', type=int, default=50)
+    parser.add_argument('--epoch', type=int, default=100)
     args = parser.parse_args()
 
     origin(args.path,args.epoch)
